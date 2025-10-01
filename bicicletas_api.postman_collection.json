@@ -1,0 +1,188 @@
+{
+  "info": {
+    "name": "API Bicicletas",
+    "_postman_id": "12345678-abcd-efgh-ijkl-987654321000",
+    "description": "Colección para probar CRUD de la tienda de bicicletas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/usuarios",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["usuarios"]
+            }
+          }
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/usuarios?nombre=Juan Perez&email=juan@test.com&ciudad=Cali",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["usuarios"],
+              "query": [
+                { "key": "nombre", "value": "Juan Perez" },
+                { "key": "email", "value": "juan@test.com" },
+                { "key": "ciudad", "value": "Cali" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar usuario",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "http://127.0.0.1:8000/usuarios/1?nombre=Juan Perez&email=juan@test.com&ciudad=Bogotá",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["usuarios", "1"],
+              "query": [
+                { "key": "nombre", "value": "Juan Perez" },
+                { "key": "email", "value": "juan@test.com" },
+                { "key": "ciudad", "value": "Bogotá" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Eliminar usuario",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://127.0.0.1:8000/usuarios/1",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["usuarios", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bicicletas",
+      "item": [
+        {
+          "name": "Listar bicicletas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://127.0.0.1:8000/bicicletas",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["bicicletas"]
+            }
+          }
+        },
+        {
+          "name": "Crear bicicleta",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "http://127.0.0.1:8000/bicicletas?marca=Trek&modelo=ProX&precio=4200",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["bicicletas"],
+              "query": [
+                { "key": "marca", "value": "Trek" },
+                { "key": "modelo", "value": "ProX" },
+                { "key": "precio", "value": "4200" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ventas",
+      "item": [
+        {
+          "name": "Listar ventas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://127.0.0.1:8000/ventas",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["ventas"]
+            }
+          }
+        },
+        {
+          "name": "Crear venta",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "http://127.0.0.1:8000/ventas?id_usuario=2&fecha=2025-09-26&total=5000",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["ventas"],
+              "query": [
+                { "key": "id_usuario", "value": "2" },
+                { "key": "fecha", "value": "2025-09-26" },
+                { "key": "total", "value": "5000" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pagos",
+      "item": [
+        {
+          "name": "Listar pagos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://127.0.0.1:8000/pagos",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["pagos"]
+            }
+          }
+        },
+        {
+          "name": "Crear pago",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "http://127.0.0.1:8000/pagos?id_venta=2&metodo_pago=Efectivo&monto=5000&fecha_pago=2025-09-26",
+              "protocol": "http",
+              "host": ["127.0.0.1"],
+              "port": "8000",
+              "path": ["pagos"],
+              "query": [
+                { "key": "id_venta", "value": "2" },
+                { "key": "metodo_pago", "value": "Efectivo" },
+                { "key": "monto", "value": "5000" },
+                { "key": "fecha_pago", "value": "2025-09-26" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
