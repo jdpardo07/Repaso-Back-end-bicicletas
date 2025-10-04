@@ -27,18 +27,19 @@
           "name": "Crear usuario",
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan Perez\",\n  \"email\": \"juan@test.com\",\n  \"ciudad\": \"Cali\"\n}"
+            },
             "url": {
-              "raw": "http://127.0.0.1:8000/usuarios?nombre=Juan Perez&email=juan@test.com&ciudad=Cali",
+              "raw": "http://127.0.0.1:8000/usuarios",
               "protocol": "http",
               "host": ["127.0.0.1"],
               "port": "8000",
-              "path": ["usuarios"],
-              "query": [
-                { "key": "nombre", "value": "Juan Perez" },
-                { "key": "email", "value": "juan@test.com" },
-                { "key": "ciudad", "value": "Cali" }
-              ]
+              "path": ["usuarios"]
             }
           }
         },
@@ -46,17 +47,19 @@
           "name": "Actualizar usuario",
           "request": {
             "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan Perez\",\n  \"email\": \"juan@test.com\",\n  \"ciudad\": \"Bogotá\"\n}"
+            },
             "url": {
-              "raw": "http://127.0.0.1:8000/usuarios/1?nombre=Juan Perez&email=juan@test.com&ciudad=Bogotá",
+              "raw": "http://127.0.0.1:8000/usuarios/1",
               "protocol": "http",
               "host": ["127.0.0.1"],
               "port": "8000",
-              "path": ["usuarios", "1"],
-              "query": [
-                { "key": "nombre", "value": "Juan Perez" },
-                { "key": "email", "value": "juan@test.com" },
-                { "key": "ciudad", "value": "Bogotá" }
-              ]
+              "path": ["usuarios", "1"]
             }
           }
         },
@@ -95,17 +98,19 @@
           "name": "Crear bicicleta",
           "request": {
             "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marca\": \"Trek\",\n  \"modelo\": \"ProX\",\n  \"precio\": 4200\n}"
+            },
             "url": {
-              "raw": "http://127.0.0.1:8000/bicicletas?marca=Trek&modelo=ProX&precio=4200",
+              "raw": "http://127.0.0.1:8000/bicicletas",
               "protocol": "http",
               "host": ["127.0.0.1"],
               "port": "8000",
-              "path": ["bicicletas"],
-              "query": [
-                { "key": "marca", "value": "Trek" },
-                { "key": "modelo", "value": "ProX" },
-                { "key": "precio", "value": "4200" }
-              ]
+              "path": ["bicicletas"]
             }
           }
         }

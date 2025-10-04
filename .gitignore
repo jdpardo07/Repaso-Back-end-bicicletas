@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Node/React
+node_modules/
+build/
+dist/
+.env.local
+
+# VSCode
+.vscode/
+
+# Otros
+.DS_Store
+Thumbs.db
+*.log
+
+# Sistema
+*.swp
+*.swo
