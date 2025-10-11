@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import './Navbar.css';
 function Bicicletas() {
   const [bicicletas, setBicicletas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ function Bicicletas() {
   if (loading) return <p>Cargando...</p>;
 
   return (
-    <div>
+    <div className='table-bicilcetas'>
       <h2>Bicicletas</h2>
       <table border="1" cellPadding="5">
         <thead>
