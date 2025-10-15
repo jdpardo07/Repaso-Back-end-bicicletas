@@ -17,9 +17,9 @@ from psycopg2.extras import RealDictCursor
 # Conexión a PostgreSQL
 conn = psycopg2.connect(
     host="localhost",
-    database="tienda_bicicletas",
-    user="olider",
-    password="esuvejes1"
+    database="Tienda_bicicletas",
+    user="postgres",
+    password="123"
 )
 
 app = FastAPI()

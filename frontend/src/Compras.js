@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Table, Spinner, Card } from 'react-bootstrap';
 
 function Compras() {
   const [compras, setCompras] = useState([]);
@@ -10,35 +11,40 @@ function Compras() {
       .then(data => {
         setCompras(data);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Cargando...</p>;
+  if (loading) {
+    return <div className="text-center"><Spinner animation="border" /> <p>Cargando...</p></div>;
+  }
 
   return (
-    <div>
-      <h2>Compras de Clientes</h2>
-      <table border="1" cellPadding="5">
-        <thead>
-          <tr>
-            <th>ID Venta</th>
-            <th>Cliente</th>
-            <th>Fecha</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {compras.map(compra => (
-            <tr key={compra.id_venta}>
-              <td>{compra.id_venta}</td>
-              <td>{compra.cliente}</td>
-              <td>{compra.fecha}</td>
-              <td>{compra.total}</td>
+    <Card>
+      <Card.Header as="h5">Compras de Clientes</Card.Header>
+      <Card.Body>
+        <Table striped bordered hover responsive>
+          <thead>
+            <tr>
+              <th>ID Venta</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {compras.map(compra => (
+              <tr key={compra.id_venta}>
+                <td>{compra.id_venta}</td>
+                <td>{compra.cliente}</td>
+                <td>{compra.fecha}</td>
+                <td>{compra.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card.Body>
+    </Card>
   );
 }
 

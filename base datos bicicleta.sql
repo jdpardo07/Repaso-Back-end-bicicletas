@@ -2,7 +2,7 @@
 
 -- DROP DATABASE IF EXISTS tienda_bicicletas;
 
-CREATE DATABASE tienda_bicicletas
+CREATE DATABASE Tienda_bicicletas
     WITH
     OWNER = postgres
     ENCODING = 'UTF8'

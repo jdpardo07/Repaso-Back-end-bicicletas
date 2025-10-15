@@ -1,60 +1,68 @@
 import React, { useEffect, useState } from 'react';
+import { Table, Button, Form, Spinner, Card, Row, Col, Modal } from 'react-bootstrap';
 
 function Clientes() {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editando, setEditando] = useState(null); // usuario en edición
+  const [editando, setEditando] = useState(null); // ID del cliente en edición
   const [form, setForm] = useState({ nombre: '', email: '', ciudad: '' });
   const [nuevo, setNuevo] = useState({ nombre: '', email: '', ciudad: '' });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [clienteAEliminar, setClienteAEliminar] = useState(null);
 
-  // Obtener todos los clientes (READ)
-  useEffect(() => {
+
+  // --- FETCH (READ) ---
+  const fetchClientes = () => {
+    setLoading(true);
     fetch('http://localhost:8000/usuarios')
       .then(res => res.json())
       .then(data => {
         setClientes(data);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchClientes();
   }, []);
 
-  // Eliminar cliente (DELETE)
-  const eliminarCliente = (id) => {
-    if(window.confirm('¿Seguro que deseas eliminar este cliente?')){
-      fetch(`http://localhost:8000/usuarios/${id}`, { method: 'DELETE' })
-        .then(async res => {
-          if (!res.ok) {
-            const data = await res.json();
-            alert(data.detail || 'No se pudo eliminar');
-            return;
-          }
-          setClientes(clientes.filter(c => c.id_usuario !== id));
-        });
-    }
+  // --- DELETE ---
+  const handleShowDeleteModal = (id) => {
+    setClienteAEliminar(id);
+    setShowDeleteModal(true);
   };
 
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setClienteAEliminar(null);
+  };
 
-  // Abrir formulario de edición (EDIT)
-  // Esta función se llama cuando haces clic en el botón "Editar" de un cliente.
-  // 1. Guarda el id del cliente que quieres editar en el estado 'editando'.
-  //    Así React sabe cuál fila está en modo edición.
-  // 2. Copia los datos actuales del cliente al estado 'form',
-  //    para que los inputs del formulario muestren los valores actuales y puedas modificarlos.
+  const confirmarEliminar = () => {
+    fetch(`http://localhost:8000/usuarios/${clienteAEliminar}`, { method: 'DELETE' })
+      .then(async res => {
+        if (!res.ok) {
+          const data = await res.json();
+          alert(data.detail || 'No se pudo eliminar');
+        } else {
+          setClientes(clientes.filter(c => c.id_usuario !== clienteAEliminar));
+        }
+        handleCloseDeleteModal();
+      });
+  };
+
+  // --- EDIT ---
   const abrirEditar = (cliente) => {
-    setEditando(cliente.id_usuario); // Marca este cliente como el que se está editando
-    setForm({ nombre: cliente.nombre, email: cliente.email, ciudad: cliente.ciudad }); // Llena el formulario con los datos actuales
+    setEditando(cliente.id_usuario);
+    setForm({ nombre: cliente.nombre, email: cliente.email, ciudad: cliente.ciudad });
   };
 
+  const cancelarEditar = () => {
+    setEditando(null);
+    setForm({ nombre: '', email: '', ciudad: '' });
+  };
 
-// Cancelar edición
-// Esta función se llama cuando haces clic en el botón "Cancelar" durante la edición.
-// 1. Limpia el estado 'editando' (lo pone en null), así React sabe que ya no estás editando ningún cliente.
-// 2. Limpia el formulario, dejando los campos vacíos.
-const cancelarEditar = () => {
-  setEditando(null); // Sale del modo edición
-  setForm({ nombre: '', email: '', ciudad: '' }); // Limpia los campos del formulario
-};
-
-  // Guardar cambios de edición (UPDATE)
+  // --- UPDATE ---
   const guardarEdicion = (id) => {
     fetch(`http://localhost:8000/usuarios/${id}`, {
       method: 'PUT',
@@ -72,7 +80,7 @@ const cancelarEditar = () => {
       });
   };
 
-  // Agregar nuevo cliente (CREATE)
+  // --- CREATE ---
   const agregarCliente = (e) => {
     e.preventDefault();
     fetch('http://localhost:8000/usuarios', {
@@ -86,92 +94,113 @@ const cancelarEditar = () => {
           alert(data.detail || 'No se pudo crear');
           return;
         }
-        // Recargar lista
-        fetch('http://localhost:8000/usuarios')
-          .then(res => res.json())
-          .then(data => setClientes(data));
+        fetchClientes(); // Recargar lista
         setNuevo({ nombre: '', email: '', ciudad: '' });
       });
   };
 
-  if (loading) return <p>Cargando...</p>;
+  if (loading) {
+    return <div className="text-center"><Spinner animation="border" /> <p>Cargando...</p></div>;
+  }
 
   return (
-    <div>
-      <h2>Clientes</h2>
-      {/* Formulario para agregar nuevo cliente */}
-      <form onSubmit={agregarCliente} style={{ marginBottom: 20 }}>
-        <input required placeholder="Nombre" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })} />
-        <input required placeholder="Email" value={nuevo.email} onChange={e => setNuevo({ ...nuevo, email: e.target.value })} />
-        <input required placeholder="Ciudad" value={nuevo.ciudad} onChange={e => setNuevo({ ...nuevo, ciudad: e.target.value })} />
-        <button type="submit">Agregar</button>
-      </form>
-      <table border="1" cellPadding="5">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Ciudad</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {clientes.map(cliente => (
-            <tr key={cliente.id_usuario}>
-              <td>{cliente.id_usuario}</td>
-              <td>
-                {editando === cliente.id_usuario ? (
-                  <input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
-                ) : cliente.nombre}
-              </td>
-              <td>
-                {editando === cliente.id_usuario ? (
-                  <input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-                ) : cliente.email}
-              </td>
-              <td>
-                {editando === cliente.id_usuario ? (
-                  <input value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} />
-                ) : cliente.ciudad}
-              </td>
-              <td>
-                {editando === cliente.id_usuario ? (
-                  <>
-                    {/* Botón para guardar edición */}
-                    <button onClick={() => guardarEdicion(cliente.id_usuario)}>Guardar</button>
-                    {/* Botón para cancelar edición */}
-                    <button onClick={cancelarEditar}>Cancelar</button>
-                  </>
-                ) : (
-                  <>
-                    {/* Botón para editar */}
-                    <button onClick={() => abrirEditar(cliente)}>Editar</button>
-                    {/* Botón para eliminar */}
-                    <button onClick={() => eliminarCliente(cliente.id_usuario)}>Eliminar</button>
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <Card className="mb-4">
+        <Card.Header as="h5">Agregar Nuevo Cliente</Card.Header>
+        <Card.Body>
+          <Form onSubmit={agregarCliente}>
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Control required placeholder="Nombre" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })} />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Control required type="email" placeholder="Email" value={nuevo.email} onChange={e => setNuevo({ ...nuevo, email: e.target.value })} />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group className="mb-3">
+                  <Form.Control required placeholder="Ciudad" value={nuevo.ciudad} onChange={e => setNuevo({ ...nuevo, ciudad: e.target.value })} />
+                </Form.Group>
+              </Col>
+              <Col md={1} className="d-grid">
+                <Button variant="primary" type="submit">Agregar</Button>
+              </Col>
+            </Row>
+          </Form>
+        </Card.Body>
+      </Card>
+
+      <Card>
+        <Card.Header as="h5">Lista de Clientes</Card.Header>
+        <Card.Body>
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Ciudad</th>
+                <th style={{width: '180px'}}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clientes.map(cliente => (
+                <tr key={cliente.id_usuario}>
+                  <td>{cliente.id_usuario}</td>
+                  <td>
+                    {editando === cliente.id_usuario ? (
+                      <Form.Control value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+                    ) : cliente.nombre}
+                  </td>
+                  <td>
+                    {editando === cliente.id_usuario ? (
+                      <Form.Control type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                    ) : cliente.email}
+                  </td>
+                  <td>
+                    {editando === cliente.id_usuario ? (
+                      <Form.Control value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} />
+                    ) : cliente.ciudad}
+                  </td>
+                  <td>
+                    {editando === cliente.id_usuario ? (
+                      <>
+                        <Button variant="success" size="sm" onClick={() => guardarEdicion(cliente.id_usuario)}>Guardar</Button>
+                        <Button variant="secondary" size="sm" className="ms-2" onClick={cancelarEditar}>Cancelar</Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button variant="warning" size="sm" onClick={() => abrirEditar(cliente)}>Editar</Button>
+                        <Button variant="danger" size="sm" className="ms-2" onClick={() => handleShowDeleteModal(cliente.id_usuario)}>Eliminar</Button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Card.Body>
+      </Card>
+
+      <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmar Eliminación</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>¿Estás seguro de que deseas eliminar este cliente?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDeleteModal}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={confirmarEliminar}>
+            Eliminar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }
 
 export default Clientes;
-
-/**
- * 
- * 
- * e: Es el evento que se dispara cuando ocurre un cambio en el input (por ejemplo, cuando escribes algo).
-e.target: Es el elemento HTML que disparó el evento, en este caso el <input>.
-e.target.value: Es el valor actual que tiene ese input (lo que el usuario está escribiendo).
-<input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
-
-Cuando escribes en el input, se dispara el evento onChange.
-e es el evento, e.target es el input, y e.target.value es el texto que escribiste.
-setForm({ ...form, nombre: e.target.value }) actualiza el estado form con el nuevo valor de nombre.
-Así React puede mostrar siempre el valor actualizado en el input y en el estado.
- */
