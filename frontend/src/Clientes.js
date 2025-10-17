@@ -105,85 +105,89 @@ function Clientes() {
 
   return (
     <>
-      <Card className="mb-4">
-        <Card.Header as="h5">Agregar Nuevo Cliente</Card.Header>
-        <Card.Body>
-          <Form onSubmit={agregarCliente}>
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Control required placeholder="Nombre" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })} />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Control required type="email" placeholder="Email" value={nuevo.email} onChange={e => setNuevo({ ...nuevo, email: e.target.value })} />
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Control required placeholder="Ciudad" value={nuevo.ciudad} onChange={e => setNuevo({ ...nuevo, ciudad: e.target.value })} />
-                </Form.Group>
-              </Col>
-              <Col md={1} className="d-grid">
-                <Button variant="primary" type="submit">Agregar</Button>
-              </Col>
-            </Row>
-          </Form>
-        </Card.Body>
-      </Card>
+      <Row className="justify-content-md-center">
+        <Col md={10}>
+          <Card className="mb-4">
+            <Card.Header as="h5">Agregar Nuevo Cliente</Card.Header>
+            <Card.Body>
+              <Form onSubmit={agregarCliente}>
+                <Row>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Control required placeholder="Nombre" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })} />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Control required type="email" placeholder="Email" value={nuevo.email} onChange={e => setNuevo({ ...nuevo, email: e.target.value })} />
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group className="mb-3">
+                      <Form.Control required placeholder="Ciudad" value={nuevo.ciudad} onChange={e => setNuevo({ ...nuevo, ciudad: e.target.value })} />
+                    </Form.Group>
+                  </Col>
+                  <Col md={1} className="d-grid">
+                    <Button variant="primary" type="submit">Agregar</Button>
+                  </Col>
+                </Row>
+              </Form>
+            </Card.Body>
+          </Card>
 
-      <Card>
-        <Card.Header as="h5">Lista de Clientes</Card.Header>
-        <Card.Body>
-          <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Ciudad</th>
-                <th style={{width: '180px'}}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientes.map(cliente => (
-                <tr key={cliente.id_usuario}>
-                  <td>{cliente.id_usuario}</td>
-                  <td>
-                    {editando === cliente.id_usuario ? (
-                      <Form.Control value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
-                    ) : cliente.nombre}
-                  </td>
-                  <td>
-                    {editando === cliente.id_usuario ? (
-                      <Form.Control type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-                    ) : cliente.email}
-                  </td>
-                  <td>
-                    {editando === cliente.id_usuario ? (
-                      <Form.Control value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} />
-                    ) : cliente.ciudad}
-                  </td>
-                  <td>
-                    {editando === cliente.id_usuario ? (
-                      <>
-                        <Button variant="success" size="sm" onClick={() => guardarEdicion(cliente.id_usuario)}>Guardar</Button>
-                        <Button variant="secondary" size="sm" className="ms-2" onClick={cancelarEditar}>Cancelar</Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button variant="warning" size="sm" onClick={() => abrirEditar(cliente)}>Editar</Button>
-                        <Button variant="danger" size="sm" className="ms-2" onClick={() => handleShowDeleteModal(cliente.id_usuario)}>Eliminar</Button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
+          <Card>
+            <Card.Header as="h5">Lista de Clientes</Card.Header>
+            <Card.Body>
+              <Table striped bordered hover responsive>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Ciudad</th>
+                    <th style={{width: '180px'}}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clientes.map(cliente => (
+                    <tr key={cliente.id_usuario}>
+                      <td>{cliente.id_usuario}</td>
+                      <td>
+                        {editando === cliente.id_usuario ? (
+                          <Form.Control value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+                        ) : cliente.nombre}
+                      </td>
+                      <td>
+                        {editando === cliente.id_usuario ? (
+                          <Form.Control type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                        ) : cliente.email}
+                      </td>
+                      <td>
+                        {editando === cliente.id_usuario ? (
+                          <Form.Control value={form.ciudad} onChange={e => setForm({ ...form, ciudad: e.target.value })} />
+                        ) : cliente.ciudad}
+                      </td>
+                      <td>
+                        {editando === cliente.id_usuario ? (
+                          <>
+                            <Button variant="success" size="sm" onClick={() => guardarEdicion(cliente.id_usuario)}>Guardar</Button>
+                            <Button variant="secondary" size="sm" className="ms-2" onClick={cancelarEditar}>Cancelar</Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button variant="warning" size="sm" onClick={() => abrirEditar(cliente)}>Editar</Button>
+                            <Button variant="danger" size="sm" className="ms-2" onClick={() => handleShowDeleteModal(cliente.id_usuario)}>Eliminar</Button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
       <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
         <Modal.Header closeButton>
