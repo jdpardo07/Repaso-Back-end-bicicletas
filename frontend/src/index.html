@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Bicicletas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Generales --- */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(to top, #f0f2f5 0%, #ffffff 100%);
+            color: #34495e;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-top: 4px solid #1abc9c; /* Color principal cambiado a turquesa */
+        }
+        h1, h2 {
+            color: #34495e;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            font-weight: 600;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #1abc9c; /* Color principal cambiado a turquesa */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-weight: 600;
+        }
+        button:hover {
+            background-color: #16a085; /* Tono más oscuro de turquesa */
+        }
+
+        /* --- Estilos del Formulario --- */
+        #form-crear-bici {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        #form-crear-bici input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #form-crear-bici button {
+            margin: 10px 0 0 0; /* Resetear margen para el botón del form */
+            background-color: #2ecc71; /* Un verde más vibrante */
+        }
+        #form-crear-bici button:hover {
+            background-color: #27ae60; /* Tono más oscuro de verde */
+        }
+
+        /* --- Estilos de la Lista --- */
+        #bicicletas-lista {
+            list-style: none;
+            padding: 0;
+        }
+        #bicicletas-lista li {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 5px solid #1abc9c; /* Color principal cambiado a turquesa */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        #bicicletas-lista li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        /* --- Mensajes de estado --- */
+        .mensaje {
+            text-align: center;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none; /* Oculto por defecto */
+        }
+        .mensaje.error {
+            color: #e74c3c;
+            background-color: #fdeded;
+            display: block;
+        }
+        .mensaje.exito {
+            color: #27ae60; /* Mantenemos un verde consistente */
+            background-color: #eafaf1;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tienda de Bicicletas</h1>
+
+    <!-- Formulario para crear bicicletas -->
+    <div class="container">
+        <h2>Añadir Nueva Bicicleta</h2>
+        <form id="form-crear-bici">
+            <input type="text" id="marca" name="marca" placeholder="Marca de la bicicleta" required>
+            <input type="text" id="modelo" name="modelo" placeholder="Modelo de la bicicleta" required>
+            <input type="number" id="precio" name="precio" placeholder="Precio" required min="0">
+            <button type="submit">Crear Bicicleta</button>
+        </form>
+        <div id="mensaje-form" class="mensaje"></div>
+    </div>
+
+    <!-- Lista de bicicletas -->
+    <div class="container">
+        <h2>Nuestras Bicicletas</h2>
+        <button id="cargar-btn">Cargar/Actualizar Lista</button>
+        <ul id="bicicletas-lista"><li>Haz clic en el botón para cargar las bicicletas.</li></ul>
+        <div id="mensaje-lista" class="mensaje"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+
+        const cargarBtn = document.getElementById('cargar-btn');
+        const formCrear = document.getElementById('form-crear-bici');
+
+        // Función para mostrar mensajes
+        const mostrarMensaje = (elementoId, texto, tipo) => {
+            const elemento = document.getElementById(elementoId);
+            elemento.textContent = texto;
+            elemento.className = `mensaje ${tipo}`; // 'error' o 'exito'
+        };
+
+        // Función para cargar y mostrar las bicicletas
+        const cargarBicicletas = async () => {
+            const lista = document.getElementById('bicicletas-lista');
+            lista.innerHTML = ''; // Limpiar lista anterior
+            document.getElementById('mensaje-lista').style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/bicicletas`);
+                if (!response.ok) throw new Error('No se pudo conectar con la API para obtener la lista.');
+                
+                const bicicletas = await response.json();
+                
+                if (bicicletas.length === 0) {
+                    lista.innerHTML = '<li>No hay bicicletas disponibles en este momento.</li>';
+                } else {
+                    bicicletas.forEach(bici => {
+                        const item = document.createElement('li');
+                        item.textContent = `ID: ${bici.id} - Marca: ${bici.marca} - Modelo: ${bici.modelo} - Precio: $${bici.precio}`;
+                        lista.appendChild(item);
+                    });
+                }
+            } catch (error) {
+                mostrarMensaje('mensaje-lista', `Error: ${error.message}. Asegúrate de que el servidor backend esté funcionando.`, 'error');
+                console.error('Error al cargar bicicletas:', error);
+            }
+        };
+
+        // Event listener para el botón de cargar
+        cargarBtn.addEventListener('click', cargarBicicletas);
+
+        // Event listener para el formulario de creación
+        formCrear.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Evitar que la página se recargue
+            
+            const nuevaBici = {
+                marca: document.getElementById('marca').value,
+                modelo: document.getElementById('modelo').value,
+                precio: parseFloat(document.getElementById('precio').value)
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/bicicletas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevaBici)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'No se pudo crear la bicicleta.');
+                }
+
+                const biciCreada = await response.json();
+                mostrarMensaje('mensaje-form', `Bicicleta "${biciCreada.marca} ${biciCreada.modelo}" creada con éxito.`, 'exito');
+                formCrear.reset(); // Limpiar el formulario
+                cargarBicicletas(); // Actualizar la lista automáticamente
+
+            } catch (error) {
+                mostrarMensaje('mensaje-form', `Error: ${error.message}`, 'error');
+                console.error('Error al crear bicicleta:', error);
+            }
+        });
+    </script>
+
+</body>
+</html>

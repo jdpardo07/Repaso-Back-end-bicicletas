@@ -106,6 +106,23 @@ def create_bicicleta(bicicleta: BicicletaIn):
         conn.commit()
         return {"message": "Bicicleta agregada correctamente"}
 
+@app.put("/bicicletas/{id_bicicleta}")
+def update_bicicleta(id_bicicleta: int, bicicleta: BicicletaIn):
+    with conn.cursor() as cur:
+        cur.execute(
+            "UPDATE bicicletas SET marca=%s, modelo=%s, precio=%s WHERE id_bicicleta=%s;",
+            (bicicleta.marca, bicicleta.modelo, bicicleta.precio, id_bicicleta)
+        )
+        conn.commit()
+        return {"message": "Bicicleta actualizada correctamente"}
+
+@app.delete("/bicicletas/{id_bicicleta}")
+def delete_bicicleta(id_bicicleta: int):
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM bicicletas WHERE id_bicicleta=%s;", (id_bicicleta,))
+        conn.commit()
+        return {"message": "Bicicleta eliminada correctamente"}
+
 # -------------------------------
 # CRUD Ventas
 # -------------------------------

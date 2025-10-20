@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, Spinner, Card, Row, Col, Modal } from 'react-bootstrap';
+import { Card, Button, Row, Col, Form, InputGroup, Spinner, Modal, ListGroup } from 'react-bootstrap';
 
-function Bicicletas() {
+const Bicicletas = () => {
   const [bicicletas, setBicicletas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editando, setEditando] = useState(null); // ID de la bicicleta en edición
-  const [form, setForm] = useState({ marca: '', modelo: '', precio: '' });
-  const [nuevo, setNuevo] = useState({ marca: '', modelo: '', precio: '' });
+  const [editingId, setEditingId] = useState(null);
+  const [newPrice, setNewPrice] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [bicicletaAEliminar, setBicicletaAEliminar] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
-  // --- FETCH (READ) ---
-  const fetchBicicletas = () => {
+  // Mapping to restore the "type" information
+  const bikeTypeMap = {
+    'Marlin 5': 'Montaña', 'X-Caliber 8': 'Montaña', 'Domane AL 3': 'Ruta', 'Madone SL 6': 'Ruta',
+    'Rockhopper Comp': 'Montaña', 'Stumpjumper Alloy': 'Montaña', 'Allez E5': 'Ruta', 'Tarmac SL6': 'Ruta',
+    'Talon 2': 'Montaña', 'Trance X 29': 'Montaña', 'Contend AR 3': 'Ruta', 'Defy Advanced 2': 'Ruta',
+    'Aspect 940': 'Montaña', 'Spark 970': 'Montaña', 'Speedster 50': 'Ruta', 'Addict 30': 'Ruta',
+    'Neuron 5': 'Montaña', 'Spectral 29 CF 7': 'Montaña', 'Endurace AL 7.0': 'Ruta', 'Aeroad CF SL 8': 'Ruta',
+    'Alma H50': 'Montaña', 'Oiz H30': 'Montaña', 'Avant H60': 'Ruta', 'Orca M30': 'Ruta'
+  };
+
+  const fetchData = () => {
     setLoading(true);
     fetch('http://localhost:8000/bicicletas')
       .then(res => res.json())
@@ -19,84 +27,81 @@ function Bicicletas() {
         setBicicletas(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(error => {
+        console.error('Error fetching bicicletas:', error);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
-    fetchBicicletas();
+    fetchData();
   }, []);
 
-  // --- DELETE ---
+  const handleEdit = (bicicleta) => {
+    setEditingId(bicicleta.id_bicicleta);
+    setNewPrice(bicicleta.precio);
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setNewPrice('');
+  };
+
+  const handleSave = (id_bicicleta) => {
+    fetch(`http://localhost:8000/bicicletas/${id_bicicleta}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ precio: parseFloat(newPrice) }),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to save');
+        return res.json();
+      })
+      .then(updatedBike => {
+        setBicicletas(bicicletas.map(b => b.id_bicicleta === id_bicicleta ? updatedBike : b));
+        handleCancel();
+      })
+      .catch(error => {
+        console.error('Error updating price:', error);
+        alert('No se pudo actualizar el precio.');
+      });
+  };
+
   const handleShowDeleteModal = (id) => {
-    setBicicletaAEliminar(id);
+    setItemToDelete(id);
     setShowDeleteModal(true);
   };
 
   const handleCloseDeleteModal = () => {
     setShowDeleteModal(false);
-    setBicicletaAEliminar(null);
+    setItemToDelete(null);
   };
 
-  const confirmarEliminar = () => {
-    fetch(`http://localhost:8000/bicicletas/${bicicletaAEliminar}`, { method: 'DELETE' })
+  const confirmDelete = () => {
+    fetch(`http://localhost:8000/bicicletas/${itemToDelete}`, { method: 'DELETE' })
       .then(async res => {
         if (!res.ok) {
-          const data = await res.json();
-          alert(data.detail || 'No se pudo eliminar');
-        } else {
-          setBicicletas(bicicletas.filter(b => b.id_bicicleta !== bicicletaAEliminar));
+          const resData = await res.json();
+          throw new Error(resData.detail || 'Could not delete');
         }
+        setBicicletas(bicicletas.filter(item => item.id_bicicleta !== itemToDelete));
+        handleCloseDeleteModal();
+      })
+      .catch(error => {
+        console.error(`Error deleting from bicicletas:`, error);
+        alert(error.message || 'Could not delete. Check console for details.');
         handleCloseDeleteModal();
       });
   };
 
-  // --- EDIT ---
-  const abrirEditar = (bicicleta) => {
-    setEditando(bicicleta.id_bicicleta);
-    setForm({ marca: bicicleta.marca, modelo: bicicleta.modelo, precio: bicicleta.precio });
-  };
+  const groupedByMarca = bicicletas.reduce((acc, curr) => {
+    (acc[curr.marca] = acc[curr.marca] || []).push(curr);
+    return acc;
+  }, {});
 
-  const cancelarEditar = () => {
-    setEditando(null);
-    setForm({ marca: '', modelo: '', precio: '' });
-  };
-
-  // --- UPDATE ---
-  const guardarEdicion = (id) => {
-    fetch(`http://localhost:8000/bicicletas/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    })
-      .then(async res => {
-        if (!res.ok) {
-          const data = await res.json();
-          alert(data.detail || 'No se pudo editar');
-          return;
-        }
-        setBicicletas(bicicletas.map(b => b.id_bicicleta === id ? { ...b, ...form } : b));
-        cancelarEditar();
-      });
-  };
-
-  // --- CREATE ---
-  const agregarBicicleta = (e) => {
-    e.preventDefault();
-    fetch('http://localhost:8000/bicicletas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nuevo)
-    })
-      .then(async res => {
-        if (!res.ok) {
-          const data = await res.json();
-          alert(data.detail || 'No se pudo crear');
-          return;
-        }
-        fetchBicicletas(); // Recargar lista
-        setNuevo({ marca: '', modelo: '', precio: '' });
-      });
-  };
+  const sortedMarcas = Object.entries(groupedByMarca).sort(([, aModels], [, bModels]) => {
+    return bModels.length - aModels.length;
+  });
 
   if (loading) {
     return <div className="text-center"><Spinner animation="border" /> <p>Cargando...</p></div>;
@@ -104,102 +109,62 @@ function Bicicletas() {
 
   return (
     <>
-      <Card className="mb-4">
-        <Card.Header as="h5">Agregar Nueva Bicicleta</Card.Header>
-        <Card.Body>
-          <Form onSubmit={agregarBicicleta}>
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Control required placeholder="Marca" value={nuevo.marca} onChange={e => setNuevo({ ...nuevo, marca: e.target.value })} />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Control required placeholder="Modelo" value={nuevo.modelo} onChange={e => setNuevo({ ...nuevo, modelo: e.target.value })} />
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Control required type="number" placeholder="Precio" value={nuevo.precio} onChange={e => setNuevo({ ...nuevo, precio: e.target.value })} />
-                </Form.Group>
-              </Col>
-              <Col md={1} className="d-grid">
-                <Button variant="primary" type="submit">Agregar</Button>
-              </Col>
-            </Row>
-          </Form>
-        </Card.Body>
-      </Card>
-
-      <Card>
-        <Card.Header as="h5">Lista de Bicicletas</Card.Header>
-        <Card.Body>
-          <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>Precio</th>
-                <th style={{width: '180px'}}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bicicletas.map(bici => (
-                <tr key={bici.id_bicicleta}>
-                  <td>{bici.id_bicicleta}</td>
-                  <td>
-                    {editando === bici.id_bicicleta ? (
-                      <Form.Control value={form.marca} onChange={e => setForm({ ...form, marca: e.target.value })} />
-                    ) : bici.marca}
-                  </td>
-                  <td>
-                    {editando === bici.id_bicicleta ? (
-                      <Form.Control value={form.modelo} onChange={e => setForm({ ...form, modelo: e.target.value })} />
-                    ) : bici.modelo}
-                  </td>
-                  <td>
-                    {editando === bici.id_bicicleta ? (
-                      <Form.Control type="number" value={form.precio} onChange={e => setForm({ ...form, precio: e.target.value })} />
-                    ) : bici.precio}
-                  </td>
-                  <td>
-                    {editando === bici.id_bicicleta ? (
-                      <>
-                        <Button variant="success" size="sm" onClick={() => guardarEdicion(bici.id_bicicleta)}>Guardar</Button>
-                        <Button variant="secondary" size="sm" className="ms-2" onClick={cancelarEditar}>Cancelar</Button>
-                      </>
+      <h2 className="mb-4">Administrar Bicicletas</h2>
+      <Row xs={1} md={2} lg={4} className="g-2">
+        {sortedMarcas.map(([marca, modelos]) => (
+          <Col key={marca} className="d-flex">
+            <Card className="h-100 w-100">
+              <Card.Header as="h5">{marca}</Card.Header>
+              <ListGroup variant="flush">
+                {modelos.map((modelo) => (
+                  <ListGroup.Item key={modelo.id_bicicleta}>
+                    <div className="fw-bold">{modelo.modelo}</div>
+                    <small className="text-muted">{bikeTypeMap[modelo.modelo] || 'General'}</small>
+                    {editingId === modelo.id_bicicleta ? (
+                      <InputGroup size="sm" className="mt-2">
+                        <InputGroup.Text>$</InputGroup.Text>
+                        <Form.Control
+                          type="number"
+                          value={newPrice}
+                          onChange={(e) => setNewPrice(e.target.value)}
+                          placeholder="Nuevo precio"
+                        />
+                        <Button variant="success" onClick={() => handleSave(modelo.id_bicicleta)}>Guardar</Button>
+                        <Button variant="secondary" onClick={handleCancel}>Cancelar</Button>
+                      </InputGroup>
                     ) : (
-                      <>
-                        <Button variant="warning" size="sm" onClick={() => abrirEditar(bici)}>Editar</Button>
-                        <Button variant="danger" size="sm" className="ms-2" onClick={() => handleShowDeleteModal(bici.id_bicicleta)}>Eliminar</Button>
-                      </>
+                      <div className="d-flex justify-content-between align-items-center mt-1">
+                        <span>${modelo.precio}</span>
+                        <div>
+                            <Button variant="warning" size="sm" onClick={() => handleEdit(modelo)}>
+                                Editar
+                            </Button>
+                            <Button variant="danger" size="sm" className="ms-2" onClick={() => handleShowDeleteModal(modelo.id_bicicleta)}>
+                                Eliminar
+                            </Button>
+                        </div>
+                      </div>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </Card>
+          </Col>
+        ))}
+      </Row>
 
       <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
         <Modal.Header closeButton>
           <Modal.Title>Confirmar Eliminación</Modal.Title>
         </Modal.Header>
-        <Modal.Body>¿Estás seguro de que deseas eliminar esta bicicleta?</Modal.Body>
+        <Modal.Body>¿Estás seguro de que quieres eliminar esta bicicleta?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDeleteModal}>
-            Cancelar
-          </Button>
-          <Button variant="danger" onClick={confirmarEliminar}>
-            Eliminar
-          </Button>
+          <Button variant="secondary" onClick={handleCloseDeleteModal}>Cancelar</Button>
+          <Button variant="danger" onClick={confirmDelete}>Eliminar</Button>
         </Modal.Footer>
       </Modal>
     </>
   );
-}
+};
 
 export default Bicicletas;
