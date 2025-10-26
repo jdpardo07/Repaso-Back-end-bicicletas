@@ -17,7 +17,13 @@ function Home() {
             <Button variant="info" size="lg" className="me-2">Ver Compras</Button>
           </LinkContainer>
           <LinkContainer to="/bicicletas">
-            <Button variant="success" size="lg">Ver Bicicletas</Button>
+            <Button variant="success" size="lg" className="me-2">Ver Bicicletas</Button>
+          </LinkContainer>
+          <LinkContainer to="/tipos-bicicleta">
+            <Button variant="warning" size="lg" className="me-2">Tienda de Bicicletas</Button>
+          </LinkContainer>
+          <LinkContainer to="/catalogo">
+            <Button variant="danger" size="lg">Catálogo</Button>
           </LinkContainer>
         </div>
       </div>
