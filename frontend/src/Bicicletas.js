@@ -9,6 +9,8 @@ const Bicicletas = () => {
   const [newPrice, setNewPrice] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newBike, setNewBike] = useState({ marca: '', modelo: '', precio: '', tipo: '' });
 
   // Mapping to restore the "type" information
   const bikeTypeMap = {
@@ -78,6 +80,37 @@ const Bicicletas = () => {
     setItemToDelete(null);
   };
 
+  const handleShowAddModal = () => setShowAddModal(true);
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    setNewBike({ marca: '', modelo: '', precio: '', tipo: '' }); // Reset form
+  };
+
+  const handleNewBikeChange = (e) => {
+    setNewBike({ ...newBike, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveNewBike = () => {
+    fetch(`${API_URL}/bicicletas`,
+     {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newBike, precio: parseFloat(newBike.precio) }),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to create');
+        return res.json();
+      })
+      .then(addedBike => {
+        fetchData(); // Refetch data to include the new bike
+        handleCloseAddModal();
+      })
+      .catch(error => {
+        console.error('Error adding bike:', error);
+        alert('No se pudo agregar la bicicleta.');
+      });
+  };
+
   const confirmDelete = () => {
     fetch(`${API_URL}/bicicletas/${itemToDelete}`, { method: 'DELETE' })
       .then(async res => {
@@ -110,7 +143,10 @@ const Bicicletas = () => {
 
   return (
     <>
-      <h2 className="mb-4">Administrar Bicicletas</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Administrar Bicicletas</h2>
+        <Button variant="primary" onClick={handleShowAddModal}>Agregar Bicicleta</Button>
+      </div>
       <Row xs={1} md={2} lg={4} className="g-2">
         {sortedMarcas.map(([marca, modelos]) => (
           <Col key={marca} className="d-flex">
@@ -153,6 +189,36 @@ const Bicicletas = () => {
           </Col>
         ))}
       </Row>
+
+      <Modal show={showAddModal} onHide={handleCloseAddModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Agregar Nueva Bicicleta</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Marca</Form.Label>
+              <Form.Control type="text" name="marca" value={newBike.marca} onChange={handleNewBikeChange} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Modelo</Form.Label>
+              <Form.Control type="text" name="modelo" value={newBike.modelo} onChange={handleNewBikeChange} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Precio</Form.Label>
+              <Form.Control type="number" name="precio" value={newBike.precio} onChange={handleNewBikeChange} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Tipo</Form.Label>
+              <Form.Control type="text" name="tipo" value={newBike.tipo} onChange={handleNewBikeChange} />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseAddModal}>Cancelar</Button>
+          <Button variant="primary" onClick={handleSaveNewBike}>Guardar</Button>
+        </Modal.Footer>
+      </Modal>
 
       <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
         <Modal.Header closeButton>

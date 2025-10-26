@@ -10,9 +10,7 @@ import Compras from './components/Compras';
 import Bicicletas from './components/Bicicletas';
 import TiposBicicleta from './components/TiposBicicleta';
 import Tiendas from './components/Tiendas';
-import Repuestos from './components/Repuestos';
-import Lujos from './components/Lujos';
-import TiendaRepuestos from './components/TiendaRepuestos';
+import Catalogo from './components/Catalogo'; // Replaced old components
 
 function App() {
   return (
@@ -40,8 +38,8 @@ function App() {
               <LinkContainer to="/tipos-bicicleta">
                 <Nav.Link>Tienda de Bicicletas</Nav.Link>
               </LinkContainer>
-              <LinkContainer to="/tienda-repuestos">
-                <Nav.Link>Repuestos de Bicicleta</Nav.Link>
+              <LinkContainer to="/catalogo">
+                <Nav.Link>Catálogo</Nav.Link>
               </LinkContainer>
             </Nav>
           </Navbar.Collapse>
@@ -56,9 +54,7 @@ function App() {
           <Route path="/bicicletas" element={<Bicicletas />} />
           <Route path="/tipos-bicicleta" element={<TiposBicicleta />} />
           <Route path="/tiendas" element={<Tiendas />} />
-          <Route path="/repuestos" element={<Repuestos />} />
-          <Route path="/lujos" element={<Lujos />} />
-          <Route path="/tienda-repuestos" element={<TiendaRepuestos />} />
+          <Route path="/catalogo" element={<Catalogo />} />
         </Routes>
       </Container>
     </Router>

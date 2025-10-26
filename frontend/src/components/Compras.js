@@ -13,11 +13,11 @@ function Compras() {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { item } = location.state || {};
+  const { item } = location.state || {}; // Changed from bicicleta to item
 
   useEffect(() => {
     // Fetch sales only if we are not in the process of a new purchase
-    if (!item) {
+    if (!item) { // Changed from bicicleta to item
       fetch(`${API_URL}/ventas`)
         .then(res => res.json())
         .then(data => {
@@ -37,11 +37,12 @@ function Compras() {
       .then(res => res.json())
       .then(data => setClientes(data))
       .catch(error => console.error('Error fetching clientes:', error));
-  }, [item]);
+  }, [item]); // Changed from bicicleta to item
 
   const handlePurchase = (clienteId) => {
     const venta = {
       id_usuario: clienteId,
+      id_bicicleta: item.id_bicicleta || null, // Keep for compatibility, will be null for non-bikes
       descripcion: `${item.nombre}`,
       total: item.precio,
     };
@@ -98,7 +99,7 @@ function Compras() {
     return <div className="text-center"><Spinner animation="border" /> <p>Cargando...</p></div>;
   }
 
-  if (item) {
+  if (item) { // Changed from bicicleta to item
     return (
       <Card>
         <Card.Header as="h5">Completar Compra</Card.Header>
@@ -183,7 +184,7 @@ function Compras() {
                 </Button>
             </Form>
           )}
-           <Button variant="secondary" className="mt-3 ms-2" onClick={() => navigate('/repuestos')}>
+           <Button variant="secondary" className="mt-3 ms-2" onClick={() => navigate('/catalogo')}>
               Cancelar
             </Button>
         </Card.Body>
@@ -195,7 +196,7 @@ function Compras() {
     <Card>
       <Card.Header as="h5">Historial de Compras</Card.Header>
       <Card.Body>
-        <Button variant="primary" className="mb-3" onClick={() => navigate('/repuestos')}>
+        <Button variant="primary" className="mb-3" onClick={() => navigate('/tipos-bicicleta')}>
           Realizar una nueva compra
         </Button>
         <Table striped bordered hover responsive>
