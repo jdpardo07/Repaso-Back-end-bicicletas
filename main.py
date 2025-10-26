@@ -11,16 +11,11 @@ class BicicletaIn(BaseModel):
     marca: str
     modelo: str
     precio: float
-import psycopg2
-from psycopg2.extras import RealDictCursor
 
-# Conexión a PostgreSQL
-conn = psycopg2.connect(
-    host="localhost",
-    database="Tienda_bicicletas",
-    user="postgres",
-    password="123"
-)
+class VentaIn(BaseModel):
+    id_usuario: int
+    descripcion: str
+    total: float
 
 app = FastAPI()
 
@@ -33,18 +28,57 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from typing import Optional
+
+
+# Conexión a PostgreSQL manejada en eventos de la app
+@app.on_event("startup")
+def startup_db_connection():
+    try:
+        app.state.conn = psycopg2.connect(
+            host="localhost",
+            database="Tienda_bicicletas",
+            user="postgres",
+            password="123",
+        )
+        print("DB connected")
+    except Exception as e:
+        # Si la conexión falla, la aplicación no debería iniciar.
+        # Levantamos una excepción para detener el proceso.
+        print(f"Could not connect to DB: {e}")
+        raise e
+
+
+@app.on_event("shutdown")
+def shutdown_db_connection():
+    conn: Optional[psycopg2.extensions.connection] = getattr(app.state, "conn", None)
+    if conn:
+        try:
+            conn.close()
+            print("DB connection closed")
+        except Exception:
+            pass
+
 # -------------------------------
 # CRUD Usuarios
 # -------------------------------
 
 @app.get("/usuarios")
 def get_usuarios():
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT * FROM usuarios;")
         return cur.fetchall()
 
 @app.get("/usuarios/{id_usuario}")
 def get_usuario(id_usuario: int):
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT * FROM usuarios WHERE id_usuario = %s;", (id_usuario,))
         usuario = cur.fetchone()
@@ -54,16 +88,24 @@ def get_usuario(id_usuario: int):
 
 @app.post("/usuarios")
 def create_usuario(usuario: UsuarioIn):
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor() as cur:
         cur.execute(
             "INSERT INTO usuarios (nombre, email, ciudad) VALUES (%s, %s, %s) RETURNING id_usuario;",
             (usuario.nombre, usuario.email, usuario.ciudad)
         )
+        new_user_id = cur.fetchone()[0]
         conn.commit()
-        return {"message": "Usuario creado correctamente"}
+        return {"id_usuario": new_user_id}
+
 
 @app.put("/usuarios/{id_usuario}")
 def update_usuario(id_usuario: int, usuario: UsuarioIn):
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor() as cur:
         cur.execute(
             "UPDATE usuarios SET nombre=%s, email=%s, ciudad=%s WHERE id_usuario=%s;",
@@ -75,6 +117,9 @@ def update_usuario(id_usuario: int, usuario: UsuarioIn):
 @app.delete("/usuarios/{id_usuario}")
 def delete_usuario(id_usuario: int):
     try:
+        conn = getattr(app.state, "conn", None)
+        if not conn:
+            raise HTTPException(status_code=500, detail="No DB connection")
         with conn.cursor() as cur:
             cur.execute("DELETE FROM usuarios WHERE id_usuario=%s;", (id_usuario,))
             conn.commit()
@@ -92,12 +137,18 @@ def delete_usuario(id_usuario: int):
 
 @app.get("/bicicletas")
 def get_bicicletas():
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT * FROM bicicletas;")
         return cur.fetchall()
 
 @app.post("/bicicletas")
 def create_bicicleta(bicicleta: BicicletaIn):
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor() as cur:
         cur.execute(
             "INSERT INTO bicicletas (marca, modelo, precio) VALUES (%s, %s, %s);",
@@ -108,6 +159,9 @@ def create_bicicleta(bicicleta: BicicletaIn):
 
 @app.put("/bicicletas/{id_bicicleta}")
 def update_bicicleta(id_bicicleta: int, bicicleta: BicicletaIn):
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor() as cur:
         cur.execute(
             "UPDATE bicicletas SET marca=%s, modelo=%s, precio=%s WHERE id_bicicleta=%s;",
@@ -118,6 +172,9 @@ def update_bicicleta(id_bicicleta: int, bicicleta: BicicletaIn):
 
 @app.delete("/bicicletas/{id_bicicleta}")
 def delete_bicicleta(id_bicicleta: int):
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor() as cur:
         cur.execute("DELETE FROM bicicletas WHERE id_bicicleta=%s;", (id_bicicleta,))
         conn.commit()
@@ -129,20 +186,26 @@ def delete_bicicleta(id_bicicleta: int):
 
 @app.get("/ventas")
 def get_ventas():
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("""
-            SELECT v.id_venta, u.nombre AS cliente, v.fecha, v.total
+            SELECT v.id_venta, u.nombre AS cliente, v.descripcion, v.fecha, v.total
             FROM ventas v
             JOIN usuarios u ON v.id_usuario = u.id_usuario;
         """)
         return cur.fetchall()
 
 @app.post("/ventas")
-def create_venta(id_usuario: int, fecha: str, total: float):
+def create_venta(venta: VentaIn):
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor() as cur:
         cur.execute(
-            "INSERT INTO ventas (id_usuario, fecha, total) VALUES (%s, %s, %s);",
-            (id_usuario, fecha, total)
+            "INSERT INTO ventas (id_usuario, descripcion, total, fecha) VALUES (%s, %s, %s, CURRENT_TIMESTAMP);",
+            (venta.id_usuario, venta.descripcion, venta.total)
         )
         conn.commit()
         return {"message": "Venta registrada correctamente"}
@@ -153,6 +216,9 @@ def create_venta(id_usuario: int, fecha: str, total: float):
 
 @app.get("/pagos")
 def get_pagos():
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("""
             SELECT p.id_pago, v.id_venta, u.nombre AS cliente, p.metodo_pago, p.monto, p.fecha_pago
@@ -164,6 +230,9 @@ def get_pagos():
 
 @app.post("/pagos")
 def create_pago(id_venta: int, metodo_pago: str, monto: float, fecha_pago: str):
+    conn = getattr(app.state, "conn", None)
+    if not conn:
+        raise HTTPException(status_code=500, detail="No DB connection")
     with conn.cursor() as cur:
         cur.execute(
             "INSERT INTO pagos (id_venta, metodo_pago, monto, fecha_pago) VALUES (%s, %s, %s, %s);",

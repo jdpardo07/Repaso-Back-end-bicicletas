@@ -64,13 +64,35 @@ INSERT INTO usuarios (nombre, email, ciudad) VALUES
 -- Insertar Bicicletas
 INSERT INTO bicicletas (marca, modelo, precio) VALUES
 ('Trek', 'Marlin 7', 3500.00),
+('Trek', 'Marlin 5', 2800.00),
+('Trek', 'X-Caliber 8', 4200.00),
 ('Giant', 'Talon 3', 2800.00),
+('Giant', 'Talon 1', 3400.00),
+('Giant', 'Stance 29 2', 5500.00),
 ('Specialized', 'Rockhopper', 4000.00),
+('Specialized', 'Stumpjumper', 6000.00),
+('Specialized', 'Fuse 27.5', 4800.00),
 ('Scott', 'Aspect 950', 3200.00),
+('Scott', 'Scale 970', 4500.00),
+('Scott', 'Spark 960', 7000.00),
 ('Cannondale', 'Trail 5', 3700.00),
+('Cannondale', 'Habit 4', 8000.00),
+('Cannondale', 'Scalpel HT Carbon 4', 9500.00),
 ('Merida', 'Big Nine 300', 2900.00),
+('Merida', 'One-Twenty 400', 6500.00),
+('Merida', 'eOne-Sixty 800', 15000.00),
 ('Santa Cruz', 'Chameleon', 5200.00),
-('Bianchi', 'Nitron 9.4', 6100.00);
+('Santa Cruz', 'Hightower', 12000.00),
+('Santa Cruz', 'Nomad', 14000.00),
+('Bianchi', 'Nitron 9.4', 6100.00),
+('Bianchi', 'Methanol CV FS', 11000.00),
+('Bianchi', 'Arcadex', 7500.00),
+('Orbea', 'Alma H50', 4300.00),
+('Orbea', 'Oiz H30', 8200.00),
+('Orbea', 'Rallon M20', 10500.00),
+('Canyon', 'Neuron 6', 5800.00),
+('Canyon', 'Spectral 29 CF 7', 9000.00),
+('Canyon', 'Strive CFR', 13000.00);
 
 -- Insertar Ventas
 INSERT INTO ventas (id_usuario, fecha, total) VALUES

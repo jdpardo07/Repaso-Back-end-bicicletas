@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import API_URL from './config';
 import { Table, Spinner, Card, Button, Form, Row, Col, Nav } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
+import API_URL from '../config.js';
 
 function Compras() {
   const [compras, setCompras] = useState([]);
@@ -13,12 +13,12 @@ function Compras() {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { bicicleta } = location.state || {};
+  const { item } = location.state || {};
 
   useEffect(() => {
     // Fetch sales only if we are not in the process of a new purchase
-    if (!bicicleta) {
-  fetch(`${API_URL}/ventas`)
+    if (!item) {
+      fetch(`${API_URL}/ventas`)
         .then(res => res.json())
         .then(data => {
           setCompras(data);
@@ -33,21 +33,20 @@ function Compras() {
     }
 
     // Fetch clients for the dropdown
-  fetch(`${API_URL}/usuarios`)
+    fetch(`${API_URL}/usuarios`)
       .then(res => res.json())
       .then(data => setClientes(data))
       .catch(error => console.error('Error fetching clientes:', error));
-  }, [bicicleta]);
+  }, [item]);
 
   const handlePurchase = (clienteId) => {
     const venta = {
       id_usuario: clienteId,
-      id_bicicleta: bicicleta.id_bicicleta || null, // Handle bikes without id
-      descripcion: `${bicicleta.nombre}`,
-      total: bicicleta.precio,
+      descripcion: `${item.nombre}`,
+      total: item.precio,
     };
 
-  fetch(`${API_URL}/ventas`, {
+    fetch(`${API_URL}/ventas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(venta),
@@ -74,7 +73,7 @@ function Compras() {
   const handleNewClientPurchase = (e) => {
     e.preventDefault();
     // First, create the new client
-  fetch(`${API_URL}/usuarios`, {
+    fetch(`${API_URL}/usuarios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newCliente),
@@ -99,13 +98,13 @@ function Compras() {
     return <div className="text-center"><Spinner animation="border" /> <p>Cargando...</p></div>;
   }
 
-  if (bicicleta) {
+  if (item) {
     return (
       <Card>
         <Card.Header as="h5">Completar Compra</Card.Header>
         <Card.Body>
-          <Card.Title>{bicicleta.nombre}</Card.Title>
-          <Card.Text>Precio: ${bicicleta.precio}</Card.Text>
+          <Card.Title>{item.nombre}</Card.Title>
+          <Card.Text>Precio: ${item.precio}</Card.Text>
 
           <Nav variant="tabs" activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-3">
             <Nav.Item>
@@ -184,7 +183,7 @@ function Compras() {
                 </Button>
             </Form>
           )}
-           <Button variant="secondary" className="mt-3 ms-2" onClick={() => navigate('/tipos-bicicleta')}>
+           <Button variant="secondary" className="mt-3 ms-2" onClick={() => navigate('/repuestos')}>
               Cancelar
             </Button>
         </Card.Body>
@@ -196,7 +195,7 @@ function Compras() {
     <Card>
       <Card.Header as="h5">Historial de Compras</Card.Header>
       <Card.Body>
-        <Button variant="primary" className="mb-3" onClick={() => navigate('/tipos-bicicleta')}>
+        <Button variant="primary" className="mb-3" onClick={() => navigate('/repuestos')}>
           Realizar una nueva compra
         </Button>
         <Table striped bordered hover responsive>
@@ -204,6 +203,7 @@ function Compras() {
             <tr>
               <th>ID Venta</th>
               <th>Cliente</th>
+              <th>Descripción</th>
               <th>Fecha</th>
               <th>Total</th>
             </tr>
@@ -213,6 +213,7 @@ function Compras() {
               <tr key={compra.id_venta}>
                 <td>{compra.id_venta}</td>
                 <td>{compra.cliente}</td>
+                <td>{compra.descripcion}</td>
                 <td>{compra.fecha}</td>
                 <td>${compra.total}</td>
               </tr>

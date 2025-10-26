@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
-import API_URL from './config';
 import { Card, Button, Row, Col, Form, InputGroup, Spinner, Modal, ListGroup } from 'react-bootstrap';
+import API_URL from '../config.js';
 
 const Bicicletas = () => {
   const [bicicletas, setBicicletas] = useState([]);
@@ -10,33 +11,50 @@ const Bicicletas = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Mapping to restore the "type" information
   const bikeTypeMap = {
     'Marlin 5': 'Montaña', 'X-Caliber 8': 'Montaña', 'Domane AL 3': 'Ruta', 'Madone SL 6': 'Ruta',
     'Rockhopper Comp': 'Montaña', 'Stumpjumper Alloy': 'Montaña', 'Allez E5': 'Ruta', 'Tarmac SL6': 'Ruta',
     'Talon 2': 'Montaña', 'Trance X 29': 'Montaña', 'Contend AR 3': 'Ruta', 'Defy Advanced 2': 'Ruta',
     'Aspect 940': 'Montaña', 'Spark 970': 'Montaña', 'Speedster 50': 'Ruta', 'Addict 30': 'Ruta',
     'Neuron 5': 'Montaña', 'Spectral 29 CF 7': 'Montaña', 'Endurace AL 7.0': 'Ruta', 'Aeroad CF SL 8': 'Ruta',
-    'Alma H50': 'Montaña', 'Oiz H30': 'Montaña', 'Avant H60': 'Ruta', 'Orca M30': 'Ruta'
+    'Alma H50': 'Montaña', 'Oiz H30': 'Montaña', 'Avant H60': 'Ruta', 'Orca M30': 'Ruta',
+    'Marlin 7': 'Montaña', 'Talon 3': 'Montaña', 'Rockhopper': 'Montaña', 'Aspect 950': 'Montaña',
+    'Trail 5': 'Montaña', 'Big Nine 300': 'Montaña', 'Chameleon': 'Montaña', 'Nitron 9.4': 'Montaña'
   };
 
   const fetchData = () => {
     setLoading(true);
+    console.log("1. Iniciando fetch hacia:", `${API_URL}/bicicletas`);
     fetch(`${API_URL}/bicicletas`)
-      .then(res => res.json())
+      .then(res => {
+        console.log("2. Respuesta recibida del servidor:", res);
+        if (!res.ok) {
+          console.error("La respuesta del servidor no fue OK. Status:", res.status);
+        }
+        return res.json();
+      })
       .then(data => {
-        setBicicletas(data);
+        console.log("3. Datos convertidos a JSON:", data);
+        if (!Array.isArray(data)) {
+            console.warn("¡Advertencia! Los datos recibidos no son un array.", data);
+        }
+        setBicicletas(data || []);
         setLoading(false);
       })
       .catch(error => {
-        console.error('Error fetching bicicletas:', error);
+        console.error('4. Ocurrió un error en el fetch:', error);
         setLoading(false);
       });
   };
 
   useEffect(() => {
+    console.log("5. El componente se ha montado. Llamando a fetchData.");
     fetchData();
   }, []);
+
+  useEffect(() => {
+    console.log("6. El estado 'bicicletas' ha cambiado:", bicicletas);
+  }, [bicicletas]);
 
   const handleEdit = (bicicleta) => {
     setEditingId(bicicleta.id_bicicleta);
@@ -95,10 +113,10 @@ const Bicicletas = () => {
       });
   };
 
-  const groupedByMarca = bicicletas.reduce((acc, curr) => {
+  const groupedByMarca = Array.isArray(bicicletas) ? bicicletas.reduce((acc, curr) => {
     (acc[curr.marca] = acc[curr.marca] || []).push(curr);
     return acc;
-  }, {});
+  }, {}) : {};
 
   const sortedMarcas = Object.entries(groupedByMarca).sort(([, aModels], [, bModels]) => {
     return bModels.length - aModels.length;

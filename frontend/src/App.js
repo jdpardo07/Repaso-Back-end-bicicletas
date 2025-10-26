@@ -4,12 +4,15 @@ import { Navbar, Nav, Container } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import './App.css';
 
-import Home from './Home';
-import Clientes from './Clientes';
-import Compras from './Compras';
-import Bicicletas from './Bicicletas';
-import TiposBicicleta from './TiposBicicleta';
-import Tiendas from './Tiendas';
+import Home from './pages/Home';
+import Clientes from './components/Clientes';
+import Compras from './components/Compras';
+import Bicicletas from './components/Bicicletas';
+import TiposBicicleta from './components/TiposBicicleta';
+import Tiendas from './components/Tiendas';
+import Repuestos from './components/Repuestos';
+import Lujos from './components/Lujos';
+import TiendaRepuestos from './components/TiendaRepuestos';
 
 function App() {
   return (
@@ -37,6 +40,9 @@ function App() {
               <LinkContainer to="/tipos-bicicleta">
                 <Nav.Link>Tienda de Bicicletas</Nav.Link>
               </LinkContainer>
+              <LinkContainer to="/tienda-repuestos">
+                <Nav.Link>Repuestos de Bicicleta</Nav.Link>
+              </LinkContainer>
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -50,6 +56,9 @@ function App() {
           <Route path="/bicicletas" element={<Bicicletas />} />
           <Route path="/tipos-bicicleta" element={<TiposBicicleta />} />
           <Route path="/tiendas" element={<Tiendas />} />
+          <Route path="/repuestos" element={<Repuestos />} />
+          <Route path="/lujos" element={<Lujos />} />
+          <Route path="/tienda-repuestos" element={<TiendaRepuestos />} />
         </Routes>
       </Container>
     </Router>
